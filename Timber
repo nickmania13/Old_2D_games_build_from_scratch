@@ -44,15 +44,17 @@ int main()
         }
 
         /***************************** Update the scene**************************/
+        
+        // Clear everything from the last frame 
         window.clear();
 
-        /************ Draw the scene*******************************/
+        
         // Draw our game scene here
         window.draw(spriteBackground);
         
         
 
-        // Clear everything from the last frame window.clear();
+        
         
 
         
