@@ -1,5 +1,8 @@
 // Include important libraries here
 #include <SFML/Graphics.hpp>
+#include <optional>
+#include <cstdlib>
+#include <ctime>
 
 // Make code easier to type with "using namespace"
 using namespace sf;
@@ -29,36 +32,217 @@ int main()
     Sprite spriteBackground(textureBackground);
 
     //Set the sprite to cover the screen
-    spriteBackground.setPosition({ 0.0f,0.0f });
+	const int BACKGROUND_HORIZONTAL_POSITION = 0;
+	const int BACKGROUND_VERTICAL_POSITION = 0;
+    spriteBackground.setPosition({ BACKGROUND_HORIZONTAL_POSITION, BACKGROUND_VERTICAL_POSITION });
 
+    //Make a tree sprite
+    Texture textureTree;
+    if (!textureTree.loadFromFile("graphics/graphics/tree.png"))
+    {
+        return 1;  // Handle error
+	}
+    Sprite spriteTree(textureTree);
+    const int TREE_HORIZONTAL_POSITION = 810;
+    const int TREE_VERTICAL_POSITION = 0;
+    spriteTree.setPosition({ TREE_HORIZONTAL_POSITION, TREE_VERTICAL_POSITION });
+    
+    //Prepare the bee
+    Texture textureBee;
+    if (!textureBee.loadFromFile("graphics/graphics/bee.png"))
+    {
+        return 1;  // Handle error
+	}
+    Sprite spriteBee(textureBee);
+    const int BEE_HORIZONTAL_POSITION = 0;
+    const int BEE_VERTICAL_POSITION = 800;
+    spriteBee.setPosition({ BEE_HORIZONTAL_POSITION, BEE_VERTICAL_POSITION });
+
+    //Is the bee currently moving?
+    bool beeActive = false;
+
+    //How fast can the bee fly
+    const float BEE_SPEED = 0.0f;
+    float beeSpeed = BEE_SPEED;
+
+    //Prepare the clouds
+    Texture textureCloud;
+    if (!textureCloud.loadFromFile("graphics/graphics/cloud.png"))
+    {
+        return 1;  // Handle error
+    }
+    Sprite spriteCloud1(textureCloud);
+    Sprite spriteCloud2(textureCloud);
+    Sprite spriteCloud3(textureCloud);
+
+    const int CLOUD1_HORIZONTAL_POSITION = 0;
+    const int CLOUD1_VERTICAL_POSITION = 0;
+    const int CLOUD2_HORIZONTAL_POSITION = 0;
+    const int CLOUD2_VERTICAL_POSITION = 250;
+    const int CLOUD3_HORIZONTAL_POSITION = 0;
+    const int CLOUD3_VERTICAL_POSITION = 500;
+
+    spriteCloud1.setPosition({ CLOUD1_HORIZONTAL_POSITION, CLOUD1_VERTICAL_POSITION });
+    spriteCloud2.setPosition({ CLOUD2_HORIZONTAL_POSITION, CLOUD2_VERTICAL_POSITION });
+    spriteCloud3.setPosition({ CLOUD3_HORIZONTAL_POSITION, CLOUD3_VERTICAL_POSITION });
+
+    //Are the clouds currently moving?
+    bool cloud1Active = false;
+    bool cloud2Active = false;
+    bool cloud3Active = false;
+
+    //How fast is each cloud
+    const float CLOUD1_SPEED = 0.0f;
+    const float CLOUD2_SPEED = 0.0f;
+    const float CLOUD3_SPEED = 0.0f;
+
+    float cloud1Speed = CLOUD1_SPEED;
+    float cloud2Speed = CLOUD2_SPEED;
+    float cloud3Speed = CLOUD3_SPEED;
+
+	//Variables to control time itself
+	Clock clock; // Start the clock
 
 
 
     while (window.isOpen())
     {
         
-        
-        if (Keyboard::isKeyPressed(Keyboard::Key::Escape))
+        while (const std::optional<sf::Event> event = window.pollEvent())
         {
-            window.close();
+			//1.Check if X in window was clicked and close the window if it was
+            if (event->is<sf::Event::Closed>())
+            {
+				window.close();
+
+            }
+
+            //2.Check if key pressed
+            if (const auto& keyEvent = event->getIf<Event::KeyPressed>())
+            {
+                //3.Check if the key pressed was ESC
+                if (keyEvent->code == Keyboard::Key::Escape)
+                {
+                    window.close();
+                }
+            }
         }
+        
+            
+        
+        
+        
+        
 
         /***************************** Update the scene**************************/
-        
-        // Clear everything from the last frame 
         window.clear();
 
+		//Amount of time since last frame
+		Time dt = clock.restart();
+
+        //Set the bee in motion
+        if (!beeActive)
+        {
+            //How fast is the bee
+            srand((int)time(0));
+            beeSpeed = (rand() % 200) + 200;
+
+            //How high is the bee
+            srand((int)time(0));
+            float bee_Height = (rand() % 1350) + 500;
+            spriteBee.setPosition({2000, bee_Height});
+            beeActive = true;
+
+        
+        }
+
+        else
+            //Move the bee when beeActive is true
+
+        {
+            // Store position in a Vector2f variable first
+            sf::Vector2f currentPositionbee = spriteBee.getPosition();
+
+            //Calculate new position
+            float newX = currentPositionbee.x - (beeSpeed * dt.asSeconds());
+            float newY = currentPositionbee.y;
+
+            //Set new position
+            spriteBee.setPosition({ newX, newY });
+
+            //Has the bee reached the leeftedge of the screen?
+            if (spriteBee.getPosition().x < -100)
+            {
+                //Set it up ready to be a whole new bee next frame
+                beeActive = false;
+            }
+        }
+
+        //Set the clouds in action
+
+        //Cloud1
+        if (!cloud1Active)
+        {
+            //How high is the cloud
+            srand((int)time(0) * 10);
+            cloud1Speed = (rand() % 200);
+
+            //How fast is the cloud
+            srand((int)time(0) * 10);
+            float cloud_Height = (rand() % 150);
+            spriteCloud1.setPosition({ -200, cloud_Height });
+            cloud1Active = true;
+
+        }
+
+        else
+            //Move the cloud when cloudActive is true
+        {
+            // Store position in a Vector2f variable first
+            sf::Vector2f currentPositioncloud1 = spriteCloud1.getPosition();
+
+            //Calculate the new position
+            float newX = currentPositioncloud1.x + (cloud1Speed * dt.asSeconds());
+            float newY = currentPositioncloud1.y;
+
+            //Set the new position
+            spriteCloud1.setPosition({ newX, newY });
+
+            //Has the cloud reached the right side of the screen?
+            if (spriteCloud1.getPosition().x > 1920)
+            {
+                cloud1Active = false;
+            }
+
+        }
+         
+
+                
+
+
+        /************ Draw the scene*******************************/
         
         // Draw our game scene here
         window.draw(spriteBackground);
+		
+
+        //Draw the clouds
+		window.draw(spriteCloud1);
+		window.draw(spriteCloud2);
+		window.draw(spriteCloud3);
+
+        //Draw the tree
+		window.draw(spriteTree);
+
+		//Draw the bee
+		window.draw(spriteBee);
+        
+        
+        
         
         
 
-        
-        
 
-        
-        
         // Show everything we just drew window.display();
         window.display();
 
