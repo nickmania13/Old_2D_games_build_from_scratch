@@ -170,7 +170,7 @@ int main()
             //Set new position
             spriteBee.setPosition({ newX, newY });
 
-            //Has the bee reached the leeftedge of the screen?
+            //Has the bee reached the left edge of the screen?
             if (spriteBee.getPosition().x < -100)
             {
                 //Set it up ready to be a whole new bee next frame
