@@ -1,15 +1,37 @@
-// Include important libraries here
 #include <SFML/Graphics.hpp>
 #include <optional>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
+#include <string>
+#include <sstream>
 
+
+
+
+using namespace std;
 // Make code easier to type with "using namespace"
 using namespace sf;
+
+
+//Function declaration
+void updateBranches(int seed);
+
+const int NUM_BRANCHES = 6;
+Sprite branches[NUM_BRANCHES];
+
+//Where it the player/branch?
+enum class side { LEFT, RIGHT, NONE };
+side branchPosition[NUM_BRANCHES];
+
 
 // This is where our game starts from
 int main()
 {
+
+
+
+
 
     // Get the desktop resolution
     VideoMode mode = VideoMode::getDesktopMode();
@@ -22,7 +44,8 @@ int main()
     //Create a texture to hold a graphic on gpu
     Texture textureBackground;
 
-    //Load a graphic into the texture
+    //Load a graphic into the te
+    // xture
     if (!textureBackground.loadFromFile("graphics/graphics/background.png"))
     {
         return 1;  // Handle error
@@ -32,8 +55,8 @@ int main()
     Sprite spriteBackground(textureBackground);
 
     //Set the sprite to cover the screen
-	const int BACKGROUND_HORIZONTAL_POSITION = 0;
-	const int BACKGROUND_VERTICAL_POSITION = 0;
+    const int BACKGROUND_HORIZONTAL_POSITION = 0;
+    const int BACKGROUND_VERTICAL_POSITION = 0;
     spriteBackground.setPosition({ BACKGROUND_HORIZONTAL_POSITION, BACKGROUND_VERTICAL_POSITION });
 
     //Make a tree sprite
@@ -41,18 +64,18 @@ int main()
     if (!textureTree.loadFromFile("graphics/graphics/tree.png"))
     {
         return 1;  // Handle error
-	}
+    }
     Sprite spriteTree(textureTree);
     const int TREE_HORIZONTAL_POSITION = 810;
     const int TREE_VERTICAL_POSITION = 0;
     spriteTree.setPosition({ TREE_HORIZONTAL_POSITION, TREE_VERTICAL_POSITION });
-    
+
     //Prepare the bee
     Texture textureBee;
     if (!textureBee.loadFromFile("graphics/graphics/bee.png"))
     {
         return 1;  // Handle error
-	}
+    }
     Sprite spriteBee(textureBee);
     const int BEE_HORIZONTAL_POSITION = 0;
     const int BEE_VERTICAL_POSITION = 800;
@@ -100,10 +123,86 @@ int main()
     float cloud2Speed = CLOUD2_SPEED;
     float cloud3Speed = CLOUD3_SPEED;
 
-	//Variables to control time itself
-	Clock clock; // Start the clock
+    //Variables to control time itself
+    Clock clock; // Start the clock
+
+    //Time bar
+    RectangleShape timeBar;
+    float timeBarStartWidth = 400;
+    float timeBarHeight = 80;
+    timeBar.setSize(Vector2f(timeBarStartWidth, timeBarHeight));
+    timeBar.setFillColor(Color::Red);
+    timeBar.setPosition({ (1920 / 2) - timeBarStartWidth / 2 , 980 });
+
+    Time gameTimeTotal;
+    float timeRemaining = 6.0f;
+    float timeBarWidthPerSecond = timeBarStartWidth / timeRemaining;
 
 
+
+    //Track whether the game is running
+    bool paused = true;
+
+
+
+
+
+    //Load font
+    Font font;
+    if (!font.openFromFile("fonts/fonts/KOMIKAP.ttf"))
+    {
+        return 1;
+    }
+
+    //HUD text
+    int score = 0;
+    Text messageText(font);
+    Text scoreText(font);
+
+
+
+    
+
+    //Assign the message and set color and size of text
+    messageText.setString("Press Enter to start!");
+    messageText.setCharacterSize(75);
+    messageText.setFillColor(Color::White);
+
+    scoreText.setString("Score = 0");
+    scoreText.setCharacterSize(100);
+    scoreText.setFillColor(Color::White);
+
+
+	//Position the text
+    FloatRect textRect = messageText.getLocalBounds();
+    messageText.setOrigin({ textRect.position.x + textRect.size.x / 2.0f,
+        textRect.position.y + textRect.size.y / 2.0f });
+
+	messageText.setPosition({ 1920 / 2.0f , 1080 / 2.0f });
+	scoreText.setPosition({ 20, 20 });
+
+
+
+    //Prepare 6 branches and set texture for each branch sprite with a for loop
+    Texture textureBranch;
+    if (!textureBranch.loadFromFile("graphics/graphics/branch.png"))
+    {
+        return 1; //Error
+    }
+
+    for (int i = 0; i < NUM_BRANCHES; i++)
+    {
+        branches[i].setTexture(textureBranch);
+        branches[i].setPosition({ -2000, -2000 }); //hide the texture of each sprite off-screen
+        branches[i].setOrigin({ 220, 20 });
+
+    }
+
+    updateBranches(1);
+    updateBranches(2);
+    updateBranches(3);
+    updateBranches(4);
+    updateBranches(5);
 
     while (window.isOpen())
     {
@@ -125,99 +224,243 @@ int main()
                 {
                     window.close();
                 }
-            }
-        }
-        
-            
-        
-        
-        
-        
+                
+				//4.Check if the key pressed was Enter
+				if (keyEvent->code == Keyboard::Key::Enter)
+                {
+                    paused = false;
 
+                    //Reset time and score
+                    score = 0;
+                    timeRemaining = 6;
+                }
+            
+            }
+
+        
+        
+        }
+                   
+        
         /***************************** Update the scene**************************/
         window.clear();
 
-		//Amount of time since last frame
-		Time dt = clock.restart();
-
-        //Set the bee in motion
-        if (!beeActive)
+        if (!paused)
         {
-            //How fast is the bee
-            srand((int)time(0));
-            beeSpeed = (rand() % 200) + 200;
 
-            //How high is the bee
-            srand((int)time(0));
-            float bee_Height = (rand() % 1350) + 500;
-            spriteBee.setPosition({2000, bee_Height});
-            beeActive = true;
 
-        
-        }
+            //Amount of time since last frame
+            Time dt = clock.restart();
 
-        else
-            //Move the bee when beeActive is true
 
-        {
-            // Store position in a Vector2f variable first
-            sf::Vector2f currentPositionbee = spriteBee.getPosition();
+            //Subtract time
+            timeRemaining -= dt.asSeconds();
 
-            //Calculate new position
-            float newX = currentPositionbee.x - (beeSpeed * dt.asSeconds());
-            float newY = currentPositionbee.y;
+            //Size up the time bar
+            timeBar.setSize(Vector2f(timeBarWidthPerSecond * timeRemaining, timeBarHeight));
 
-            //Set new position
-            spriteBee.setPosition({ newX, newY });
-
-            //Has the bee reached the left edge of the screen?
-            if (spriteBee.getPosition().x < -100)
+            //If out of time pause the game
+            if (timeRemaining <= 0.0f)
             {
-                //Set it up ready to be a whole new bee next frame
-                beeActive = false;
-            }
-        }
+                paused = true;
 
-        //Set the clouds in action
+                //Change text
+                messageText.setString("Out of time !!!");
 
-        //Cloud1
-        if (!cloud1Active)
-        {
-            //How high is the cloud
-            srand((int)time(0) * 10);
-            cloud1Speed = (rand() % 200);
 
-            //How fast is the cloud
-            srand((int)time(0) * 10);
-            float cloud_Height = (rand() % 150);
-            spriteCloud1.setPosition({ -200, cloud_Height });
-            cloud1Active = true;
+                //Reposition the text based on his new size
+                FloatRect textRect = messageText.getLocalBounds();
+                messageText.setOrigin({ textRect.position.x + textRect.size.x / 2.0f,
+                    textRect.position.y + textRect.size.y / 2.0f });
 
-        }
+                messageText.setPosition({ 1920 / 2.0f , 1080 / 2.0f });
 
-        else
-            //Move the cloud when cloudActive is true
-        {
-            // Store position in a Vector2f variable first
-            sf::Vector2f currentPositioncloud1 = spriteCloud1.getPosition();
 
-            //Calculate the new position
-            float newX = currentPositioncloud1.x + (cloud1Speed * dt.asSeconds());
-            float newY = currentPositioncloud1.y;
-
-            //Set the new position
-            spriteCloud1.setPosition({ newX, newY });
-
-            //Has the cloud reached the right side of the screen?
-            if (spriteCloud1.getPosition().x > 1920)
-            {
-                cloud1Active = false;
             }
 
-        }
-         
 
+            //Set the bee in motion
+            if (!beeActive)
+            {
+                //How fast is the bee
+                srand((int)time(0));
+                beeSpeed = (rand() % 200) + 200;
+
+                //How high is the bee
+                srand((int)time(0));
+                float bee_Height = (rand() % 1350) + 500;
+                spriteBee.setPosition({ 2000, bee_Height });
+                beeActive = true;
+
+
+            }
+
+            else
+                //Move the bee when beeActive is true
+
+            {
+                // Store position in a Vector2f variable first
+                sf::Vector2f currentPositionbee = spriteBee.getPosition();
+
+                //Calculate new position
+                float newX = currentPositionbee.x - (beeSpeed * dt.asSeconds());
+                float newY = currentPositionbee.y;
+
+                //Set new position
+                spriteBee.setPosition({ newX, newY });
+
+                //Has the bee reached the leeftedge of the screen?
+                if (spriteBee.getPosition().x < -100)
+                {
+                    //Set it up ready to be a whole new bee next frame
+                    beeActive = false;
+                }
+            }
+
+            //Set the clouds in action
+
+            //Cloud1
+            if (!cloud1Active)
+            {
+                //How fast is the cloud
+                srand((int)time(0) * 10);
+                cloud1Speed = (rand() % 200);
+
+                //How high is the cloud
+                srand((int)time(0) * 10);
+                float cloud_Height1 = (rand() % 150);
+                spriteCloud1.setPosition({ -200, cloud_Height1 });
+                cloud1Active = true;
+
+            }
+
+            else
+                //Move the cloud when cloudActive is true
+            {
+                // Store position in a Vector2f variable first
+                sf::Vector2f currentPositioncloud1 = spriteCloud1.getPosition();
+
+                //Calculate the new position
+                float newX = currentPositioncloud1.x + (cloud1Speed * dt.asSeconds());
+                float newY = currentPositioncloud1.y;
+
+                //Set the new position
+                spriteCloud1.setPosition({ newX, newY });
+
+                //Has the cloud reached the right side of the screen?
+                if (spriteCloud1.getPosition().x > 1920)
+                {
+                    cloud1Active = false;
+                }
+
+            }
+
+            //Cloud2
+            if (!cloud2Active)
+            {
+                //How fast is the cloud
+                srand((int)time(0) * 20);
+                cloud2Speed = (rand() % 200);
+
+                //How high is the cloud
+                srand((int)time(0) * 20);
+                float cloud_Height2 = (rand() % 300) - 150;
+                spriteCloud2.setPosition({ -200, cloud_Height2 });
+                cloud2Active = true;
+
+            }
+
+            else
+                //Move the cloud when cloudActive is true
+            {
+                // Store position in a Vector2f variable first
+                sf::Vector2f currentPositioncloud2 = spriteCloud2.getPosition();
+
+                //Calculate the new position
+                float newX = currentPositioncloud2.x + (cloud2Speed * dt.asSeconds());
+                float newY = currentPositioncloud2.y;
+
+                //Set the new position
+                spriteCloud2.setPosition({ newX, newY });
+
+                //Has the cloud reached the right side of the screen?
+                if (spriteCloud2.getPosition().x > 1920)
+                {
+                    cloud2Active = false;
+                }
+
+            }
+
+            //Cloud 3
+            if (!cloud3Active)
+            {
+                //How fast is the cloud
+                srand((int)time(0) * 30);
+                cloud3Speed = (rand() % 200);
+
+                //How high is the cloud
+                srand((int)time(0) * 30);
+                float cloud_Height3 = (rand() % 450) - 150;
+                spriteCloud3.setPosition({ -200, cloud_Height3 });
+                cloud3Active = true;
+
+            }
+
+            else
+                //Move the cloud when cloudActive is true
+            {
+                // Store position in a Vector2f variable first
+                sf::Vector2f currentPositioncloud3 = spriteCloud3.getPosition();
+
+                //Calculate the new position
+                float newX = currentPositioncloud3.x + (cloud3Speed * dt.asSeconds());
+                float newY = currentPositioncloud3.y;
+
+                //Set the new position
+                spriteCloud3.setPosition({ newX, newY });
+
+                //Has the cloud reached the right side of the screen?
+                if (spriteCloud3.getPosition().x > 1920)
+                {
+                    cloud3Active = false;
+                }
+
+            }
+
+            //update the score text
+            stringstream ss;
+            ss << "Score = " << score;
+            scoreText.setString(ss.str()); //sets string contained in ss to scoreText
+
+            
+            //Update the branch sprites
+            for (int i = 0; i < NUM_BRANCHES; i++)
+            {
+                float height = i * 150;
+
+                if (branchPosition[i] == side::LEFT)
+                {
+                    branches[i].setPosition({ 610, height });
+
+                    branches[i].setRotation(degrees(180));
                 
+                }
+                
+                else if (branchPosition[i] == side::RIGHT)
+                {
+                    branches[i].setPosition({ 1330, height });
+
+                    branches[i].setRotation(degrees(0));
+                }
+
+                else
+                {
+                    branches[i].setPosition({ 3000, height }); //hide the sprite
+                }
+            }
+            
+
+        }
 
 
         /************ Draw the scene*******************************/
@@ -231,14 +474,33 @@ int main()
 		window.draw(spriteCloud2);
 		window.draw(spriteCloud3);
 
+        //Draw the branches
+        for (int i = 0; i < NUM_BRANCHES; i++)
+        {
+            window.draw(branches[i]);
+        }
+
+
         //Draw the tree
 		window.draw(spriteTree);
 
 		//Draw the bee
 		window.draw(spriteBee);
+
+        //Draw the score
+        window.draw(scoreText);
+        
+        //Draw the timebar
+        window.draw(timeBar);
         
         
-        
+       
+        //Draw the message
+        if (paused)
+        {
+            window.draw(messageText);
+
+        }
         
         
 
@@ -252,3 +514,42 @@ int main()
 
     return 0;
 }
+
+//Branch function definition
+void updateBranches(int seed)
+{
+    //Move all the branches down one place
+    for (int j = NUM_BRANCHES - 1; j > 0; j--)
+    {
+        branches[j] = branches[j - 1];
+    }
+
+
+    //Spawn a new branch at the top
+    srand((int)time(0) + seed);
+    int r = (rand() % 5);
+
+    switch (r)
+    {
+    case 0:
+        branchPosition[0] = side::LEFT;
+        break;
+
+    case 1:
+        branchPosition[0] = side::RIGHT;
+        break;
+
+    default:
+        branchPosition[0] = side::NONE;
+        break;
+
+
+    }
+
+
+}
+
+
+
+
+
