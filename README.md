@@ -8,7 +8,7 @@ Following *Beginning C++ Game Programming* by John Horton. This repository curre
 ---
 
 **Engine:** **None — built from scratch**  
-**Graphics library:** **SFML** used for windowing, input, and 2D rendering.
+**Graphics library:** **SFML 3.0.2** used for windowing, input, and 2D rendering.
 
 ---
 
@@ -32,4 +32,4 @@ Following *Beginning C++ Game Programming* by John Horton. This repository curre
 6. Copy the matching SFML DLLs from the SFML `bin` folder into the executable output folder if using dynamic libraries.
 
 
-#**SFML note:** This project uses SFML for windowing and 2D rendering. Make sure you download the SFML package that matches your compiler and architecture, link the appropriate `.lib` files, and place the SFML DLLs next to the executable or on your PATH.
+#**SFML note:** This project uses SFML 3 for windowing and 2D rendering. Make sure you download the SFML package that matches your compiler and architecture, link the appropriate `.lib` files, and place the SFML DLLs next to the executable or on your PATH.
