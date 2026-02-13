@@ -11,6 +11,7 @@ Following *Beginning C++ Game Programming* by John Horton. This repository curre
 **Graphics library:** **SFML 3.0.2** used for windowing, input, and 2D rendering.
 
 ---
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/c334f16e-0085-4f1d-bd1f-6891f0643503" />
 
 ## Prerequisites
 
