@@ -1,6 +1,6 @@
 C++ Game Development
 
-//The Timber game is not finished yet, probably if i have to guess in 2/14/26 or maybe earlier it will be available to run
+//The Timber game is not finished yet.
 
 **From-scratch C++ game example — no external game engine.**  
 Following *Beginning C++ Game Programming* by John Horton. This repository currently contains only a single study file, `timber.cpp`, implemented without a third‑party game engine. In the near future there will be added more.
